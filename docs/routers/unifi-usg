@@ -1,0 +1,45 @@
+This guide was developed using the Unifi Security Gateway (USG) 3P v1.1.19. Following these steps will have you adding your Pi-hole as a DNS server for your IP stack for all devices on your LAN.
+
+> Note:
+While this guide attemps to cover both IPv4 and IPv6, your mileage may vary.
+
+### Grab your v4 and v6 addresss from your Raspi
+
+SSH into your Raspi. A quick `ifconfig eth0 ` will get you the address information for your Ethernet port.
+
+```
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.0.9  netmask 255.255.255.0  broadcast 192.168.0.255
+        inet6 2001:470:5:3::8ed  prefixlen 128  scopeid 0x0<global>
+        inet6 2001:470:5:3:8d70:e92e:7030:6eef  prefixlen 64  scopeid 0x0<global>
+        inet6 fe80::337f:710d:6781:4c85  prefixlen 64  scopeid 0x20<link>
+        ether dc:a6:32:0e:31:2d  txqueuelen 1000  (Ethernet)
+        RX packets 1297459  bytes 1279521260 (1.1 GiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 2315988  bytes 2766370095 (2.5 GiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        ```
+Take note of the `inet` address, and the `inet6` address which starts with `fe` (denotes a local link or LAN address). Those are the IPs which you'll use as your DNS servers in the USG. For this example, we'll be using the `192.168.0.9` and `fe80::337f:710d:6781:4c85` IPs for the following directions
+
+### Distribute Pi-hole as DNS server via DHCP
+
+1. Log into your Unifi Cloud Key.
+2. Go to **Settings** --> **Internet**
+3. Click on the WAN line that appears.
+
+[Screenshot]
+
+4. Under **Advanced**, in the DNS Server section uncheck the Auto box and add your Raspi's IPv4 address. This allows your USG to use Pi-hole for all DNS lookups. Click **Apply Changes** to have the settings persistently saved.
+
+[Screenshot]
+
+5. Go to **Settings** --> **Networks**
+6. Click on the Network link that you want to modify DNS for.
+
+[Screenshot]
+
+7. Under **DHCP**, in the DHCP Server Management section click "Show options" to reveal the **DHCP DNS Server** section. Check the **Enable** box and enter your Raspi's IPv4 address here.
+
+8. Scroll down to **IPv6**, and under the **DHCPv6/RDNSS DNS Control** section, uncheck **Auto** if it's enabled and enter Raspi's IPv6 address here. Click **Apply Changes** to have the settings persistently saved.
+
+All client devices on your network should now automatically be configured with a single IPv4 and single IPv6 address for DNS resolution in the IP stack. If you don't see your client devices update quickly enough, you *can* toggle Wi-Fi off/on or disconnect the Ethernet cable for a couple of seconds and then reconnect it.
